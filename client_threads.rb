@@ -38,30 +38,28 @@ end
 
 start = Time.now
 
-res = [Thread.new { a(11) }, Thread.new { a(12) }, Thread.new { a(13) }, Thread.new { b(1) }].map(&:value)
+res = [Thread.new { a(11) }, Thread.new { a(12) }, Thread.new { a(13) }, Thread.new { b(1) }, Thread.new { b(2) }].map(&:value)
+b2 = res.pop
 b1 = res.pop
 
 ab1 = "#{collect_sorted(res)}-#{b1}"
 puts "AB1 = #{ab1}"
 
-res = [Thread.new { a(21) }, Thread.new { a(22) }, Thread.new { a(23) }, Thread.new { b(2) }].map(&:value)
-b2 = res.pop
+res = [Thread.new { a(21) }, Thread.new { a(22) }, Thread.new { a(23) }, Thread.new { c(ab1) }].map(&:value)
+c1 = res.pop
+puts "C1 = #{c1}"
 
 ab2 = "#{collect_sorted(res)}-#{b2}"
 puts "AB2 = #{ab2}"
 
-res = [Thread.new { a(31) }, Thread.new { a(32) }, Thread.new { a(33) }, Thread.new { b(3) }].map(&:value)
-
+res = [Thread.new { a(31) }, Thread.new { a(32) }, Thread.new { a(33) }, Thread.new { b(3) }, Thread.new { c(ab2) }].map(&:value)
+c2 = res.pop
+puts "C2 = #{c2}"
 b3 = res.pop
 
 ab3 = "#{collect_sorted(res)}-#{b3}"
 puts "AB3 = #{ab3}"
 
-# find c-s
-c1 = c(ab1)
-puts "C1 = #{c1}"
-c2 = c(ab2)
-puts "C2 = #{c2}"
 c3 = c(ab3)
 puts "C3 = #{c3}"
 
