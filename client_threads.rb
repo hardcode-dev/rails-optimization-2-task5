@@ -38,6 +38,7 @@ end
 
 start = Time.now
 
+# 3*a + 2*b (2s)
 res = [Thread.new { a(11) }, Thread.new { a(12) }, Thread.new { a(13) }, Thread.new { b(1) }, Thread.new { b(2) }].map(&:value)
 b2 = res.pop
 b1 = res.pop
@@ -45,6 +46,7 @@ b1 = res.pop
 ab1 = "#{collect_sorted(res)}-#{b1}"
 puts "AB1 = #{ab1}"
 
+# 3*a + c (1s)
 res = [Thread.new { a(21) }, Thread.new { a(22) }, Thread.new { a(23) }, Thread.new { c(ab1) }].map(&:value)
 c1 = res.pop
 puts "C1 = #{c1}"
@@ -52,6 +54,7 @@ puts "C1 = #{c1}"
 ab2 = "#{collect_sorted(res)}-#{b2}"
 puts "AB2 = #{ab2}"
 
+# 3*a + b + c (2s)
 res = [Thread.new { a(31) }, Thread.new { a(32) }, Thread.new { a(33) }, Thread.new { b(3) }, Thread.new { c(ab2) }].map(&:value)
 c2 = res.pop
 puts "C2 = #{c2}"
@@ -60,10 +63,12 @@ b3 = res.pop
 ab3 = "#{collect_sorted(res)}-#{b3}"
 puts "AB3 = #{ab3}"
 
+# 1s
 c3 = c(ab3)
 puts "C3 = #{c3}"
 
 c123 = collect_sorted([c1, c2, c3])
+# 1s
 result = a(c123)
 
 puts "FINISHED in #{Time.now - start}s."
