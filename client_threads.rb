@@ -39,38 +39,68 @@ end
 start = Time.now
 
 # 3*a + 2*b (2s)
-res = [Thread.new { a(11) }, Thread.new { a(12) }, Thread.new { a(13) }, Thread.new { b(1) }, Thread.new { b(2) }].map(&:value)
-b2 = res.pop
-b1 = res.pop
+as = []
+bs = []
 
-ab1 = "#{collect_sorted(res)}-#{b1}"
+a_threads = []
+b_threads = []
+
+[11, 12, 13].each do |i|
+  a_threads << Thread.new { as << a(i) }
+end
+
+[1, 2].each do |i|
+  b_threads << Thread.new { bs << b(i) }
+end
+
+# Ждем  a(11), a(12), a(13)
+a_threads.each(&:join)
+
+# Запускаем a(21), a(22), a(23) после завершения a(11), a(12), a(13)
+[21, 22, 23].each do |i|
+  b_threads << Thread.new { as << a(i) }
+end
+
+# Ждем завершения всех потоков
+b_threads.each(&:join) # 2s
+
+ab1 = "#{collect_sorted(as[0,3])}-#{bs[0]}"
 puts "AB1 = #{ab1}"
 
-# 3*a + b + c (2s)
-res = [Thread.new { a(21) }, Thread.new { a(22) }, Thread.new { a(23) }, Thread.new { b(3) }, Thread.new { c(ab1) }].map(&:value)
-c1 = res.pop
-puts "C1 = #{c1}"
-b3 = res.pop
-
-
-ab2 = "#{collect_sorted(res)}-#{b2}"
+ab2 = "#{collect_sorted(as[3,3])}-#{bs[1]}"
 puts "AB2 = #{ab2}"
 
-# 3*a + c (1s)
-res = [Thread.new { a(31) }, Thread.new { a(32) }, Thread.new { a(33) }, Thread.new { c(ab2) }].map(&:value)
-c2 = res.pop
-puts "C2 = #{c2}"
+as = []
+b3 = nil
+c1 = nil
+c2 = nil
 
-ab3 = "#{collect_sorted(res)}-#{b3}"
+ab_threads = []
+
+[31, 32, 33].each do |i|
+  ab_threads << Thread.new { as << a(i) }
+end
+
+ab_threads << Thread.new { b3 = b(3) }
+
+Thread.new { c1 = c(ab1) }.join
+Thread.new { c2 = c(ab2) }.join
+
+ab_threads.each(&:join) # 2s
+
+puts "C1 = #{c1}"
+
+ab3 = "#{collect_sorted(as)}-#{b3}"
 puts "AB3 = #{ab3}"
+
+puts "C2 = #{c2}"
 
 # 1s
 c3 = c(ab3)
 puts "C3 = #{c3}"
 
 c123 = collect_sorted([c1, c2, c3])
-# 1s
-result = a(c123)
+result = a(c123) # 1s
 
 puts "FINISHED in #{Time.now - start}s."
 puts "RESULT = #{result}" # 0bbe9ecf251ef4131dd43e1600742cfb
