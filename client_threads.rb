@@ -46,19 +46,20 @@ b1 = res.pop
 ab1 = "#{collect_sorted(res)}-#{b1}"
 puts "AB1 = #{ab1}"
 
-# 3*a + c (1s)
-res = [Thread.new { a(21) }, Thread.new { a(22) }, Thread.new { a(23) }, Thread.new { c(ab1) }].map(&:value)
+# 3*a + b + c (2s)
+res = [Thread.new { a(21) }, Thread.new { a(22) }, Thread.new { a(23) }, Thread.new { b(3) }, Thread.new { c(ab1) }].map(&:value)
 c1 = res.pop
 puts "C1 = #{c1}"
+b3 = res.pop
+
 
 ab2 = "#{collect_sorted(res)}-#{b2}"
 puts "AB2 = #{ab2}"
 
-# 3*a + b + c (2s)
-res = [Thread.new { a(31) }, Thread.new { a(32) }, Thread.new { a(33) }, Thread.new { b(3) }, Thread.new { c(ab2) }].map(&:value)
+# 3*a + c (1s)
+res = [Thread.new { a(31) }, Thread.new { a(32) }, Thread.new { a(33) }, Thread.new { c(ab2) }].map(&:value)
 c2 = res.pop
 puts "C2 = #{c2}"
-b3 = res.pop
 
 ab3 = "#{collect_sorted(res)}-#{b3}"
 puts "AB3 = #{ab3}"
