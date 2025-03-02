@@ -1,5 +1,9 @@
 require 'openssl'
 require 'faraday'
+require 'async'
+require 'async/barrier'
+require 'async/semaphore'
+
 
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
@@ -38,41 +42,46 @@ end
 
 start = Time.now
 
-a11 = a(11)
-a12 = a(12)
-a13 = a(13)
-b1 = b(1)
+result = Sync do
+  semaphore_a = Async::Semaphore.new(3)
+  semaphore_b = Async::Semaphore.new(2)
+  semaphore_c = Async::Semaphore.new(1)
 
-ab1 = "#{collect_sorted([a11, a12, a13])}-#{b1}"
-puts "AB1 = #{ab1}"
+  ab1 = Async do
+    b1 = semaphore_b.async{ b(1) }
+    a11 = semaphore_a.async{ a(11) }
+    a12 = semaphore_a.async{ a(12) }
+    a13 = semaphore_a.async{ a(13) }
 
-c1 = c(ab1)
-puts "C1 = #{c1}"
+    "#{collect_sorted([a11.wait, a12.wait, a13.wait])}-#{b1.wait}"
+  end
 
-a21 = a(21)
-a22 = a(22)
-a23 = a(23)
-b2 = b(2)
+  ab2 = Async do
+    b2 = semaphore_b.async{ b(2) }
+    a21 = semaphore_a.async{ a(21) }
+    a22 = semaphore_a.async{ a(22) }
+    a23 = semaphore_a.async{ a(23) }
 
-ab2 = "#{collect_sorted([a21, a22, a23])}-#{b2}"
-puts "AB2 = #{ab2}"
+    "#{collect_sorted([a21.wait, a22.wait, a23.wait])}-#{b2.wait}"
+  end
 
-c2 = c(ab2)
-puts "C2 = #{c2}"
+  ab3 = Async do
+    b3 = semaphore_b.async{ b(3) }
+    a31 = semaphore_a.async{ a(31) }
+    a32 = semaphore_a.async{ a(32) }
+    a33 = semaphore_a.async{ a(33) }
 
-a31 = a(31)
-a32 = a(32)
-a33 = a(33)
-b3 = b(3)
+    "#{collect_sorted([a31.wait, a32.wait, a33.wait])}-#{b3.wait}"
+  end
 
-ab3 = "#{collect_sorted([a31, a32, a33])}-#{b3}"
-puts "AB3 = #{ab3}"
+  c1 = semaphore_c.async { c(ab1.wait) }
+  c2 = semaphore_c.async { c(ab2.wait) }
+  c3 = semaphore_c.async { c(ab3.wait) }
 
-c3 = c(ab3)
-puts "C3 = #{c3}"
-
-c123 = collect_sorted([c1, c2, c3])
-result = a(c123)
+  c123 = collect_sorted([c1.wait, c2.wait, c3.wait])
+  a(c123)
+end
 
 puts "FINISHED in #{Time.now - start}s."
 puts "RESULT = #{result}" # 0bbe9ecf251ef4131dd43e1600742cfb
+puts "VALID: #{result == "0bbe9ecf251ef4131dd43e1600742cfb"}"
