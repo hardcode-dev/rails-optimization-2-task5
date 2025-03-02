@@ -81,8 +81,11 @@ val3 = [31, 32, 33]
 @all_vall_a = [val1, val2, val3]
 @all_vall_b = [1, 2, 3]
 
+# канал для метода a
 @results_task_a = {}
+# канал для метода b
 @results_task_b = {}
+# канал для метода c
 @results_task_c = {}
 
 @threads = []
@@ -94,6 +97,7 @@ val3 = [31, 32, 33]
 }
 @threads << Thread.new { start_worker(@all_vall_b, func_b ,2, @results_task_b) }
 
+# тред который наблюдает за каналами и помере того как в них начинают приходить данные, начинает обращатся к ендпоинту `c`
 @threads << Thread.new do
   index_fetch = 0
   exists = []
@@ -137,31 +141,6 @@ start = Time.now
 @threads.map(&:join)
 
 result = a(@results_task_c.values.sort.join("-")).value
-# ab1 = start_worker(val1, 1, func_a, func_b)
-# # puts "AB1 = #{ab1}"
-
-# c1 = c(ab1)
-# # puts "C1 = #{c1}"
-
-# # val = [21, 22, 23]
-
-# ab2 = start_worker(val2, 2, func_a, func_b)
-# # puts "AB2 = #{ab2}"
-
-# c2 = c(ab2)
-# # puts "C2 = #{c2}"
-
-# # val = [31, 32, 33]
-
-# ab3 = start_worker(val3, 3, func_a, func_b)
-# # puts "AB3 = #{ab3}"
-
-# c3 = c(ab3)
-# # puts "C3 = #{c3}"
-
-# c123 = collect_sorted([c1, c2, c3])
-# result = a(c123)
-
 
 time = Time.now - start
 
@@ -172,6 +151,6 @@ if result != expected_result
   raise ResultIsNotEq, "#{result} != #{expected_result}"
 end
 
-# if time > expected_time
-#   raise TimeIsOverError, "#{time}"
-# end
+if time > expected_time
+  raise TimeIsOverError, "#{time}"
+end
